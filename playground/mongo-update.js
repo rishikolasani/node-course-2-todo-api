@@ -8,7 +8,10 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp',(err,db)=>{
 db.collection('Todo').findOneAndUpdate({_id:new ObjectId("5b79961633c9e10e94add795")},{
   $set:{
     completed:true
-  }
+  }//,
+//  $inc{
+    //age:1
+  //}
 },{
   returnOriginal:false
 }
