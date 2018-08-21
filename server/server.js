@@ -1,6 +1,9 @@
+require('./config/config.js');
+
 var express = require('express');
 var bodyParser= require('body-Parser');
 var {ObjectID}=require('mongodb');
+const _ = require('lodash');
 
 var {mongoose}= require('./db/mongoose.js');
 var {user}=  require('./models/user.js');
@@ -30,7 +33,7 @@ app.get('/todos',(req,res)=>{
     res.status(400).send(e);
 })
 });
-app.get('/todos/:id',(req,res)=>{
+/*app.get('/todos/:id',(req,res)=>{
   var id = req.params.id;
 
   if(!ObjectID.isValid(id)){
@@ -46,9 +49,14 @@ app.get('/todos/:id',(req,res)=>{
   }).catch((e)=>{
     res.status(400).send();
   });
+});*/
+
+app.patch('/todos/:id',(req,res)=>{
+  var id = req.params.id;
+  var body=_.pick(req.body,['text','completed']);
 });
 
-app.delete('/todos/:id',(req,res)=>{
+/*app.delete('/todos/:id',(req,res)=>{
   var id = req.params.id;
   if(!ObjectID.isValid(id)){
     return res.status(404).send();
@@ -60,9 +68,9 @@ app.delete('/todos/:id',(req,res)=>{
   }).catch(e)=>{
     res.status(404).send();
   };
-  });
-
 });
+
+});*/
 
 app.listen(port,()=>{
   console.log(`started on port ${port}`);
