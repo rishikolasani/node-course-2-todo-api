@@ -6,7 +6,7 @@ var {ObjectID}=require('mongodb');
 const _ = require('lodash');
 
 var {mongoose}= require('./db/mongoose.js');
-var {user}=  require('./models/user.js');
+var {User}=  require('./models/user.js');
 var {Todo}=  require('./models/Todo.js');
 
 
@@ -71,10 +71,26 @@ app.patch('/todos/:id',(req,res)=>{
 });
 
 });*/
+app.post('/users',(req,res)=>{
+  var body = _.pick(req.body,['email','password']);
+  var user= new User(body);
+  user.save().then(()=>{
+    return user.generateAuthToken();
+
+   }).then((token)=>{
+      res.header('X-auth',token).send(user);
+    }).catch((e)=>{
+      res.status(400).send(e);
+
+
+
+  });
+
+});
 
 app.listen(port,()=>{
   console.log(`started on port ${port}`);
 });
 module.exports={
   app
-};
+}
