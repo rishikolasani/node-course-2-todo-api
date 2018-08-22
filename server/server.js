@@ -74,16 +74,34 @@ app.patch('/todos/:id',(req,res)=>{
 app.post('/users',(req,res)=>{
   var body = _.pick(req.body,['email','password']);
   var user= new User(body);
+  req.user = user;
   user.save().then(()=>{
     return user.generateAuthToken();
 
    }).then((token)=>{
-      res.header('X-auth',token).send(user);
+      res.header('x-auth',token).send(user);
     }).catch((e)=>{
       res.status(400).send(e);
 
 
 
+  });
+
+});
+
+app.get('/users/me',(req,res)=>{
+  var token = req.header('x-auth');
+
+  User.findByToken(token).then((user)=>{
+    if(!user){
+      return promise.reject();
+
+    }
+    res.send(req.user);
+    console.log(req.user);
+
+  }).catch((e)=>{
+    res.status(401).send();
   });
 
 });
