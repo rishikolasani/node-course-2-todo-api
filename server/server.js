@@ -8,10 +8,13 @@ const _ = require('lodash');
 var {mongoose}= require('./db/mongoose.js');
 var {User}=  require('./models/user.js');
 var {Todo}=  require('./models/Todo.js');
+var {Example}=require('./models/example.js');
+
 
 
 var app = express();
 var port = process.env.PORT ||3000;
+//example.example();
 
 app.use(bodyParser.json());
 
@@ -33,7 +36,7 @@ app.get('/todos',(req,res)=>{
     res.status(400).send(e);
 })
 });
-/*app.get('/todos/:id',(req,res)=>{
+app.get('/todos/:id',(req,res)=>{
   var id = req.params.id;
 
   if(!ObjectID.isValid(id)){
@@ -49,33 +52,53 @@ app.get('/todos',(req,res)=>{
   }).catch((e)=>{
     res.status(400).send();
   });
-});*/
+});
 
 app.patch('/todos/:id',(req,res)=>{
   var id = req.params.id;
   var body=_.pick(req.body,['text','completed']);
+  if(!ObjectID.isValid(id)){
+    return res.status(404).send();
+  }
+  if(_.isBoolean(body.completeed)&& body.completed){
+    body.competedAt=new Date().getTime();
+  }else{
+    body.completed=false;
+    body.completedAt=null;
+
+  }
+  Todo.findByIdAndUpdate(id,{$set:body},{new:true}).then((todo)=>{
+    if(!todo){
+      return res.status(400).send();
+
+    }
+    res.send({todo});
+
+  }).catch((e)=>{
+    res.status(400).send();
+  });
 });
 
-/*app.delete('/todos/:id',(req,res)=>{
+app.delete('/todos/:id',(req,res)=>{
   var id = req.params.id;
   if(!ObjectID.isValid(id)){
     return res.status(404).send();
   }
-  Todo.findByIdandRemove(id).then((todo)=>{
+  Todo.findByIdAndRemove(id).then((todo)=>{
     if(!todo){
       return res.status(404).send();
     }
-  }).catch(e)=>{
+  }).catch((e)=>{
     res.status(404).send();
-  };
+  });
 });
 
-});*/
+
 app.post('/users',(req,res)=>{
   var body = _.pick(req.body,['email','password']);
   var user= new User(body);
-  req.user = user;
-  user.save().then(()=>{
+  user.save().then((user)=>{
+
     return user.generateAuthToken();
 
    }).then((token)=>{
@@ -89,8 +112,23 @@ app.post('/users',(req,res)=>{
 
 });
 
-app.get('/users/me',(req,res)=>{
+
+
+
+app.post('/users/login',(req,res)=>{
+  var body = _.pick(req.body,['email','password']);
+
+
+   User.findByCredentials(body.email,body.password).then((user)=>{
+     res.send(user);
+   }).catch((e)=>{
+     res.status(400).send();
+   });
+});
+
+/*app.get('/users/me',(req,res)=>{
   var token = req.header('x-auth');
+
 
   User.findByToken(token).then((user)=>{
     if(!user){
@@ -104,6 +142,16 @@ app.get('/users/me',(req,res)=>{
     res.status(401).send();
   });
 
+});*/
+app.post('/example',(req,res)=>{
+var example = new Example({
+  text:req.body.text
+});
+example.save().then((doc)=>{
+  res.send(doc);
+},(e)=>{
+  res.status(400).send(e);
+});
 });
 
 app.listen(port,()=>{

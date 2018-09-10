@@ -50,6 +50,7 @@ userSchema.methods.generateAuthToken = function(){
   var user = this;
   var access = 'auth';
   var token = jwt.sign({_id:user._id.toHexString(),access},'abc123').toString();
+  console.log(token);
   user.tokens = user.tokens.concat([{access,token}]);
 
   return user.save().then(()=>{
@@ -64,25 +65,47 @@ userSchema.statics.findByToken = function(token){
     decoded=jwt.verify(token,'abc123');
 
   }catch(e){
-    //return new promise((resolve,reject)=>{
-      //    reject();
-      return promise.reject();
-
-    }
+  //  return new promise((resolve,reject)=>{
+  //   //      reject();
+  //   //  return new promise.reject();
+  //
+  // });
 
 
 
   return  User.findOne({
-    '_id':token._id,
+    '_id':decoded._id,
       'tokens.token':token,
     'tokens.access':'auth'
 
   });
-  };
+}};
+
+userSchema.statics.findByCredentials =function(email,password){
+
+  var user = this;
+  return User.findOne({email}).then((user)=>{
+    console.log();
+    if(!user){
+      return promise.reject();
+
+    }
+    return new promise((resolve,reject)=>{
+      bcrypt.compare(password,user.password,(err,res)=>{
+        if(res){
+          resolve(user);
+        }else{
+          reject();
+        }
+      });
+    });
+  });
+
+};
 
   userSchema.pre('save',function(next){
     var user = this;
-    if(user.isModified(password)){
+    if(user.isModified('password')){
       bcrypt.genSalt(10,(err,salt)=>{
         bcrypt.hash(user.password,salt,(err,hash)=>{
           user.password=hash;

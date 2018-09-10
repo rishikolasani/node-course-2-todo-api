@@ -21,7 +21,16 @@ module.exports={
 
 
 /*var Todo2 = new Todo({
-  text:'hello world',
+  text:{
+    type:String,
+    required:true,
+    minlength:1,
+    trim:true
+  },
+  sfdc_id:{
+    type:String,
+    default:true
+  },
 
 });
 
